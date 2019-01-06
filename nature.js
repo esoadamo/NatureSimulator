@@ -2,105 +2,43 @@ const $ = document.querySelector.bind(document);
 const menu = $("#menu");
 
 /**
- * Dictionary of all possible tiles
+ * Dictionary of all possible tiles. Loaded from nature/blocks.json
  * @type {Object}
  */
-const tiles = {
-  grass: {
-    name: "grass",
-    imgSrc: "nature/grass.png",
-    img: null,  // this will  be replaced when the image is loaded
-    spread: 5,  // % of chance that this tile will spread into void
-    clone: {
-      water: 2,  // % change of cloning grass tile over water
-      forest: 2
-    },
-    canChangeInto: {  // % chance of changing this tile to another tile
-      water: 3
-    }
-  },
-  water: {
-    name: "water",
-    imgSrc: "nature/water.png",
-    img: null,
-    spread: 3,
-    clone: {
-      grass: 3,
-      forest: 1,
-      sand: 3
-    },
-    canChangeInto: {
-      grass: 7
-    }
-  },
-  mountain: {
-    name: "mountain",
-    imgSrc: "nature/mountain.png",
-    img: null,
-    spread: 1,
-    clone: {
-      grass: 0.5,
-      water: 0.5,
-      forest: 0.25,
-      sand: 0.75
-    }
-  },
-  forest: {
-    name: "forest",
-    imgSrc: "nature/forest.png",
-    img: null,
-    spread: 3,
-    clone: {
-      grass: 3,
-      water: 2,
-    },
-    canChangeInto: {
-      grass: 4,
-      house: 5
-    }
-  },
-  house: {
-    name: "house",
-    imgSrc: "nature/house.png",
-    img: null,
-    spread: 0,
-    clone: {
-      grass: 4,
-      forest: 6,
-      sand: 3
-    },
-    canChangeInto: {
-      grass: 3,
-      sand: 5
-    }
-  },
-  sand: {
-    name: "sand",
-    imgSrc: "nature/sand.png",
-    img: null,
-    spread: 0,
-    clone: {
-      grass: 3,
-      water: 4,
-      forest: 2
-    }
-  }
-};
+const tiles = {};
 
-let map = [];  // 2D array of tiles / null
-let tick = -1;  // current tick number
+let map = []; // 2D array of tiles / null
+let tick = -1; // current tick number
 
 /**
  * Start loading all tiles
  * @return {[type]} [description]
  */
-function init() {
-  for (let tileData of Object.values(tiles)) {
-    tileData.img = new Image();
-    tileData.img.src = tileData.imgSrc;
-    tileData.img.onload = drawMap;
+async function init() {
+  Object.assign(tiles, JSON.parse(await new Promise(resolve => {
+    let request = new XMLHttpRequest();
+    request.open('GET', 'nature/blocks.json');
+    request.onload = () => {
+      if (request.readyState === 4)
+        resolve(request.responseText);
+    }
+    request.send(null);
+  })));
+
+  for (let tileName of Object.keys(tiles)) {
+    tiles[tileName].name = tileName;
+    tiles[tileName].img = new Image();
+    tiles[tileName].img.src = tiles[tileName].imgSrc;
+    tiles[tileName].img.onload = drawMap;
   }
-  nextTick();  // init GUI
+
+  map = generateMap();
+
+  nextTick(); // init GUI
+
+  drawMap();
+
+  setInterval(nextTick, 500);
 }
 
 /**
@@ -109,7 +47,7 @@ function init() {
 function nextTick() {
   tick++;
   menu.textContent = `Tick ${tick}`;
-  if (tick === 0) return;  // this is just the init, do not evolve anything yet
+  if (tick === 0) return; // this is just the init, do not evolve anything yet
 
   let newFields = []; // all previously null fields in format [x, y, tiles.type]
 
@@ -120,12 +58,19 @@ function nextTick() {
 
       let changeMe = {};
 
-      for (let neighbor of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]]) {
+      for (let neighbor of [
+          [x + 1, y],
+          [x - 1, y],
+          [x, y + 1],
+          [x, y - 1]
+        ]) {
         let nX = neighbor[0];
         let nY = neighbor[1];
 
         if (nX < 0 || nX >= map[0].length || nY < 0 || nY >= map.length || map[nY][nX] === null) {
-          if (randomWithWeight({spread: map[y][x].spread}, 200) !== null)
+          if (randomWithWeight({
+              spread: map[y][x].spread
+            }, 200) !== null)
             newFields.push([nX, nY, map[y][x]]);
         } else if (map[y][x].name in map[nY][nX].clone) {
           if (!(map[nY][nX].name in changeMe)) changeMe[map[nY][nX].name] = 0;
@@ -134,7 +79,7 @@ function nextTick() {
       }
 
       if ('canChangeInto' in map[y][x])
-        for (let option of Object.keys(map[y][x].canChangeInto)){
+        for (let option of Object.keys(map[y][x].canChangeInto)) {
           if (!(option in changeMe))
             changeMe[option] = 0;
           changeMe[option] += map[y][x].canChangeInto[option];
@@ -158,10 +103,10 @@ function nextTick() {
         for (let ii = i + 1; ii < newFields.length; ii++)
           if (newFields[ii][1] === -1)
             newFields[ii][1] = 0;
-      } else if(nY >= map.length)
+      } else if (nY >= map.length)
         map.push(newRow.slice());
 
-      if (nX === -1){
+      if (nX === -1) {
         for (let y = 0; y < map.length; y++)
           map[y].splice(0, 0, null);
         nX = 0;
@@ -169,7 +114,7 @@ function nextTick() {
           if (newFields[ii][0] === -1)
             newFields[ii][0] = 0;
         newRow.push(null);
-      } else if (nX >= map[0].length){
+      } else if (nX >= map[0].length) {
         newRow.push(null);
         for (let y = 0; y < map.length; y++)
           map[y].push(null);
@@ -253,11 +198,11 @@ function drawMap() {
   }
 }
 
-function choose(arr){
+function choose(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function fieldFilled(x, y, mapOverride=null){
+function fieldFilled(x, y, mapOverride = null) {
   if (mapOverride === null)
     mapOverride = map;
   return y >= 0 && y < mapOverride.length && x >= 0 && x < mapOverride[0].length && mapOverride[y][x] !== null;
@@ -279,23 +224,23 @@ function generateMap() {
   // Add lakes and rivers
   let waterBlocks = Math.floor(blocksTotal * (5 + (Math.random() * 50)) / 100);
 
-  while (waterBlocks){
+  while (waterBlocks) {
     let y = Math.floor(Math.random() * size[1]);
     let x = Math.floor(Math.random() * size[0]);
 
     let riverLength = Math.floor(Math.random() * waterBlocks) + 1;
-    for (let i = 0; i < riverLength; i++){
+    for (let i = 0; i < riverLength; i++) {
       map[y][x] = tiles.water;
 
       let nX = x
       let nY = y;
 
-      if(choose(['v', 'h']) === 'v')
+      if (choose(['v', 'h']) === 'v')
         nY += choose([1, -1]);
       else
         nX += choose([1, -1]);
 
-      if (fieldFilled(nX, nY, map)){
+      if (fieldFilled(nX, nY, map)) {
         x = nX;
         y = nY;
         waterBlocks--;
@@ -305,26 +250,27 @@ function generateMap() {
     // Add mountains
     let mountainBlocks = Math.floor(blocksTotal * Math.random() * 10 / 100);
 
-    while (mountainBlocks){
+    while (mountainBlocks) {
       let y = Math.floor(Math.random() * size[1]);
       let x = Math.floor(Math.random() * size[0]);
 
       let riverLength = Math.floor(Math.random() * mountainBlocks) + 1;
-      for (let i = 0; i < riverLength; i++){
+      for (let i = 0; i < riverLength; i++) {
         map[y][x] = tiles.mountain;
 
         let nX = x
         let nY = y;
 
-        if(choose(['v', 'h']) === 'v')
+        if (choose(['v', 'h']) === 'v')
           nY += choose([1, -1]);
         else
           nX += choose([1, -1]);
 
-        if (fieldFilled(nX, nY, map)) if (map[nY][nX].name === "grass"){
-          x = nX;
-          y = nY;
-        }
+        if (fieldFilled(nX, nY, map))
+          if (map[nY][nX].name === "grass") {
+            x = nX;
+            y = nY;
+          }
         mountainBlocks--;
       }
     }
@@ -332,26 +278,27 @@ function generateMap() {
     // Add forests
     let forestBlocks = Math.floor(blocksTotal * Math.random() * 15 / 100);
 
-    while (forestBlocks){
+    while (forestBlocks) {
       let y = Math.floor(Math.random() * size[1]);
       let x = Math.floor(Math.random() * size[0]);
 
       let riverLength = Math.floor(Math.random() * forestBlocks) + 1;
-      for (let i = 0; i < riverLength; i++){
+      for (let i = 0; i < riverLength; i++) {
         map[y][x] = tiles.forest;
 
         let nX = x
         let nY = y;
 
-        if(choose(['v', 'h']) === 'v')
+        if (choose(['v', 'h']) === 'v')
           nY += choose([1, -1]);
         else
           nX += choose([1, -1]);
 
-        if (fieldFilled(nX, nY, map)) if (map[nY][nX].name === "grass"){
-          x = nX;
-          y = nY;
-        }
+        if (fieldFilled(nX, nY, map))
+          if (map[nY][nX].name === "grass") {
+            x = nX;
+            y = nY;
+          }
         forestBlocks--;
       }
     }
@@ -359,26 +306,27 @@ function generateMap() {
     // Add sand
     let sandBlocks = Math.floor(blocksTotal * Math.random() * 5 / 100);
 
-    while (sandBlocks){
+    while (sandBlocks) {
       let y = Math.floor(Math.random() * size[1]);
       let x = Math.floor(Math.random() * size[0]);
 
       let riverLength = Math.floor(Math.random() * sandBlocks) + 1;
-      for (let i = 0; i < riverLength; i++){
+      for (let i = 0; i < riverLength; i++) {
         map[y][x] = tiles.sand;
 
         let nX = x
         let nY = y;
 
-        if(choose(['v', 'h']) === 'v')
+        if (choose(['v', 'h']) === 'v')
           nY += choose([1, -1]);
         else
           nX += choose([1, -1]);
 
-        if (fieldFilled(nX, nY, map)) if (map[nY][nX].name === "grass"){
-          x = nX;
-          y = nY;
-        }
+        if (fieldFilled(nX, nY, map))
+          if (map[nY][nX].name === "grass") {
+            x = nX;
+            y = nY;
+          }
         sandBlocks--;
       }
     }
@@ -386,26 +334,27 @@ function generateMap() {
     // Add house
     let houseBlocks = Math.floor(blocksTotal * Math.random() * 5 / 100);
 
-    while (houseBlocks){
+    while (houseBlocks) {
       let y = Math.floor(Math.random() * size[1]);
       let x = Math.floor(Math.random() * size[0]);
 
       let riverLength = Math.floor(Math.random() * houseBlocks) + 1;
-      for (let i = 0; i < riverLength; i++){
+      for (let i = 0; i < riverLength; i++) {
         map[y][x] = tiles.house;
 
         let nX = x
         let nY = y;
 
-        if(choose(['v', 'h']) === 'v')
+        if (choose(['v', 'h']) === 'v')
           nY += choose([1, -1]);
         else
           nX += choose([1, -1]);
 
-        if (fieldFilled(nX, nY, map)) if (["grass", "forest"].indexOf(map[nY][nX].name) !== -1){
-          x = nX;
-          y = nY;
-        }
+        if (fieldFilled(nX, nY, map))
+          if (["grass", "forest"].indexOf(map[nY][nX].name) !== -1) {
+            x = nX;
+            y = nY;
+          }
         houseBlocks--;
       }
     }
@@ -414,10 +363,4 @@ function generateMap() {
   return map;
 }
 
-window.onload = () => {
-  map = generateMap();
-  init();
-  drawMap();
-
-  setInterval(nextTick, 500);
-}
+window.onload = init;

@@ -1,0 +1,69 @@
+{
+  "grass": {
+    "imgSrc": "nature/grass.png",
+    "spread": 5,
+    "clone": {
+      "water": 2,
+      "forest": 2
+    },
+    "canChangeInto": {
+      "water": 3
+    }
+  },
+  "water": {
+    "imgSrc": "nature/water.png",
+    "spread": 3,
+    "clone": {
+      "grass": 3,
+      "forest": 1,
+      "sand": 3
+    },
+    "canChangeInto": {
+      "grass": 7
+    }
+  },
+  "mountain": {
+    "imgSrc": "nature/mountain.png",
+    "spread": 1,
+    "clone": {
+      "grass": 0.5,
+      "water": 0.5,
+      "forest": 0.25,
+      "sand": 0.75
+    }
+  },
+  "forest": {
+    "imgSrc": "nature/forest.png",
+    "spread": 3,
+    "clone": {
+      "grass": 3,
+      "water": 2
+    },
+    "canChangeInto": {
+      "grass": 4,
+      "house": 5
+    }
+  },
+  "house": {
+    "imgSrc": "nature/house.png",
+    "spread": 0,
+    "clone": {
+      "grass": 4,
+      "forest": 6,
+      "sand": 3
+    },
+    "canChangeInto": {
+      "grass": 3,
+      "sand": 5
+    }
+  },
+  "sand": {
+    "imgSrc": "nature/sand.png",
+    "spread": 0,
+    "clone": {
+      "grass": 3,
+      "water": 4,
+      "forest": 2
+    }
+  }
+}
