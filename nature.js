@@ -28,6 +28,9 @@ const tiles = {
       grass: 3,
       forest: 1,
       sand: 3
+    },
+    canChangeInto: {
+      grass: 7
     }
   },
   mountain: {
@@ -50,6 +53,10 @@ const tiles = {
     clone: {
       grass: 3,
       water: 2,
+    },
+    canChangeInto: {
+      grass: 4,
+      house: 5
     }
   },
   house: {
@@ -74,7 +81,7 @@ const tiles = {
     spread: 0,
     clone: {
       grass: 3,
-      water: 3,
+      water: 4,
       forest: 2
     }
   }
