@@ -87,7 +87,7 @@ function nextTick() {
         let nY = neighbor[1];
 
         if (nX < 0 || nX >= map[0].length || nY < 0 || nY >= map.length || map[nY][nX] === null) {
-          if (Math.random() * 100 <= map[y][x].spread)
+          if (randomWithWeight({spread: map[y][x].spread}, 200) !== null)
             newFields.push([nX, nY, map[y][x]]);
         } else if (map[y][x].name in map[nY][nX].clone) {
           if (!(map[nY][nX].name in changeMe)) changeMe[map[nY][nX].name] = 0;
