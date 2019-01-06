@@ -23,6 +23,16 @@ const tiles = {
     clone: {
       grass: 3
     }
+  },
+  mountain: {
+    name: "mountain",
+    imgSrc: "nature/mountain.png",
+    img: null,
+    spread: 1,
+    clone: {
+      grass: 1,
+      water: 1
+    }
   }
 };
 
@@ -235,6 +245,33 @@ function generateMap() {
         x = nX;
         y = nY;
         waterBlocks--;
+      }
+    }
+
+    // Add mountains
+    let mountainBlocks = Math.floor(blocksTotal * Math.random() * 10 / 100);
+
+    while (mountainBlocks){
+      let y = Math.floor(Math.random() * size[1]);
+      let x = Math.floor(Math.random() * size[0]);
+
+      let riverLength = Math.floor(Math.random() * mountainBlocks) + 1;
+      for (let i = 0; i < riverLength; i++){
+        map[y][x] = tiles.mountain;
+
+        let nX = x
+        let nY = y;
+
+        if(choose(['v', 'h']) === 'v')
+          nY += choose([1, -1]);
+        else
+          nX += choose([1, -1]);
+
+        if (fieldFilled(nX, nY, map)) if (map[nY][nX].name === "grass"){
+          x = nX;
+          y = nY;
+        }
+        mountainBlocks--;
       }
     }
   }
