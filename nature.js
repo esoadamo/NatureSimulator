@@ -10,9 +10,10 @@ const tiles = {
     name: "grass",
     imgSrc: "nature/grass.png",
     img: null,  // this will  be replaced when the image is loaded
-    spread: 2,  // % of chance that this tile will spread into void
+    spread: 5,  // % of chance that this tile will spread into void
     clone: {
-      water: 2  // % change of cloning grass tile over water
+      water: 2,  // % change of cloning grass tile over water
+      forest: 2
     }
   },
   water: {
@@ -21,7 +22,8 @@ const tiles = {
     img: null,
     spread: 3,
     clone: {
-      grass: 3
+      grass: 3,
+      forest: 1
     }
   },
   mountain: {
@@ -31,7 +33,18 @@ const tiles = {
     spread: 1,
     clone: {
       grass: 1,
-      water: 1
+      water: 1,
+      forest: 0.5
+    }
+  },
+  forest: {
+    name: "forest",
+    imgSrc: "nature/forest.png",
+    img: null,
+    spread: 3,
+    clone: {
+      grass: 3,
+      water: 5
     }
   }
 };
@@ -274,6 +287,33 @@ function generateMap() {
         mountainBlocks--;
       }
     }
+
+    // Add forests
+    let forestBlocks = Math.floor(blocksTotal * Math.random() * 15 / 100);
+
+    while (forestBlocks){
+      let y = Math.floor(Math.random() * size[1]);
+      let x = Math.floor(Math.random() * size[0]);
+
+      let riverLength = Math.floor(Math.random() * forestBlocks) + 1;
+      for (let i = 0; i < riverLength; i++){
+        map[y][x] = tiles.forest;
+
+        let nX = x
+        let nY = y;
+
+        if(choose(['v', 'h']) === 'v')
+          nY += choose([1, -1]);
+        else
+          nX += choose([1, -1]);
+
+        if (fieldFilled(nX, nY, map)) if (map[nY][nX].name === "grass"){
+          x = nX;
+          y = nY;
+        }
+        forestBlocks--;
+      }
+    }
   }
 
   return map;
@@ -284,5 +324,5 @@ window.onload = () => {
   init();
   drawMap();
 
-  setInterval(nextTick, 5000);
+  setInterval(nextTick, 500);
 }
