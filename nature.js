@@ -12,6 +12,8 @@ let map = []; // 2D array of tiles / null
 let tick = -1; // current tick number
 let music = null;
 
+let timerTick = null;
+
 /**
  * Start loading all tiles
  * @return {[type]} [description]
@@ -40,15 +42,16 @@ async function init() {
 
   drawMap();
 
-  setInterval(nextTick, 500);
+  timerTick = setInterval(nextTick, 500);
 }
 
 /**
  * Increment tick and evolve the map
  */
-function nextTick() {
+function nextTick(repaint = true) {
   tick++;
-  tickCounter.textContent = `Tick ${tick}`;
+  if (repaint)
+    tickCounter.textContent = `Tick ${tick}`;
   if (tick === 0) return; // this is just the init, do not evolve anything yet
 
   let newFields = []; // all previously null fields in format [x, y, tiles.type]
@@ -126,7 +129,8 @@ function nextTick() {
     }
   }
 
-  drawMap();
+  if (repaint)
+    drawMap();
 }
 
 function randomWithWeight(dict, optionOtherWeight = 0) {
