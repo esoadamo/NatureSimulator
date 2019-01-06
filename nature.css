@@ -3,13 +3,13 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  background: pink;
+  background-image: linear-gradient(to bottom right, #3ECADB, #00a75a);
 }
 
 #mapFrame {
   height: 100%;
   width: 100%;
-  overflow: scroll;
+  overflow: auto;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -25,4 +25,5 @@ canvas {
   background: #555555;
   border-radius: 5px;
   font-size: 30px;
+  font-family: monospace;
 }
