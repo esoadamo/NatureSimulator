@@ -14,6 +14,9 @@ const tiles = {
     clone: {
       water: 2,  // % change of cloning grass tile over water
       forest: 2
+    },
+    canChangeInto: {  // % chance of changing this tile to another tile
+      water: 3
     }
   },
   water: {
@@ -23,7 +26,8 @@ const tiles = {
     spread: 3,
     clone: {
       grass: 3,
-      forest: 1
+      forest: 1,
+      sand: 3
     }
   },
   mountain: {
@@ -45,7 +49,7 @@ const tiles = {
     spread: 3,
     clone: {
       grass: 3,
-      water: 5
+      water: 2,
     }
   },
   house: {
@@ -54,8 +58,13 @@ const tiles = {
     img: null,
     spread: 0,
     clone: {
-      grass: 5,
-      forest: 3
+      grass: 4,
+      forest: 6,
+      sand: 3
+    },
+    canChangeInto: {
+      grass: 3,
+      sand: 5
     }
   },
   sand: {
@@ -117,11 +126,14 @@ function nextTick() {
         }
       }
 
-      let stayTheSameWeight = 0;
-      for (let changeWeight of Object.values(changeMe))
-        stayTheSameWeight += 100 - changeWeight;
+      if ('canChangeInto' in map[y][x])
+        for (let option of Object.keys(map[y][x].canChangeInto)){
+          if (!(option in changeMe))
+            changeMe[option] = 0;
+          changeMe[option] += map[y][x].canChangeInto[option];
+        }
 
-      let changeMeInto = randomWithWeight(changeMe, stayTheSameWeight);
+      let changeMeInto = randomWithWeight(changeMe, 100 * Object.keys(changeMe).length);
       if (changeMeInto !== null) map[y][x] = tiles[changeMeInto];
     }
 
