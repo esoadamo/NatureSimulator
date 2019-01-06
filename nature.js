@@ -376,8 +376,8 @@ musicPlayer.onclick = () => {
      */
     music = new Audio("https://soundimage.org/wp-content/uploads/2018/11/Valley-Sunrise_Looping.mp3");
     music.addEventListener('ended', () => {
-      this.currentTime = 0;
-      this.play();
+      music.currentTime = 0;
+      music.play();
     }, false);
     music.play();
     musicPlayer.textContent = '🔇';
