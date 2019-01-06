@@ -1,5 +1,6 @@
 const $ = document.querySelector.bind(document);
-const menu = $("#menu");
+const tickCounter = $("#tickCounter");
+const musicPlayer = $("#audioPlayer");
 
 /**
  * Dictionary of all possible tiles. Loaded from nature/blocks.json
@@ -9,6 +10,7 @@ const tiles = {};
 
 let map = []; // 2D array of tiles / null
 let tick = -1; // current tick number
+let music = null;
 
 /**
  * Start loading all tiles
@@ -46,7 +48,7 @@ async function init() {
  */
 function nextTick() {
   tick++;
-  menu.textContent = `Tick ${tick}`;
+  tickCounter.textContent = `Tick ${tick}`;
   if (tick === 0) return; // this is just the init, do not evolve anything yet
 
   let newFields = []; // all previously null fields in format [x, y, tiles.type]
@@ -364,3 +366,28 @@ function generateMap() {
 }
 
 window.onload = init;
+
+musicPlayer.onclick = () => {
+  // Start music
+  if (music === null) {
+    /*
+    Music by Eric Matyas
+    www.soundimage.org
+     */
+    music = new Audio("https://soundimage.org/wp-content/uploads/2018/11/Valley-Sunrise_Looping.mp3");
+    music.addEventListener('ended', () => {
+      this.currentTime = 0;
+      this.play();
+    }, false);
+    music.play();
+    musicPlayer.textContent = '🔇';
+  } else {
+    if (music.paused) {
+      music.play();
+      musicPlayer.textContent = '🔇';
+    } else {
+      music.pause();
+      musicPlayer.textContent = '🔊';
+    }
+  }
+};

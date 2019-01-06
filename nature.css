@@ -19,11 +19,15 @@ canvas {
   width: 100%;
 }
 
-#menu {
+.menu {
   position: fixed;
   color: #ffc100;
   background: #555555;
   border-radius: 5px;
   font-size: 30px;
   font-family: monospace;
+}
+
+#audioPlayer {
+  right: 0;
 }
