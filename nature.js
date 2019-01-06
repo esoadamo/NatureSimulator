@@ -10,18 +10,18 @@ const tiles = {
     name: "grass",
     imgSrc: "nature/grass.png",
     img: null,  // this will  be replaced when the image is loaded
-    spread: 4,  // % of chance that this tile will spread into void
+    spread: 2,  // % of chance that this tile will spread into void
     clone: {
-      water: 5  // % change of cloning grass tile over water
+      water: 2  // % change of cloning grass tile over water
     }
   },
   water: {
     name: "water",
     imgSrc: "nature/water.png",
     img: null,
-    spread: 5,
+    spread: 3,
     clone: {
-      grass: 10
+      grass: 3
     }
   }
 };
@@ -104,9 +104,12 @@ function nextTick() {
         for (let ii = i + 1; ii < newFields.length; ii++)
           if (newFields[ii][0] === -1)
             newFields[ii][0] = 0;
-      } else if (nX >= map[0].length)
+        newRow.push(null);
+      } else if (nX >= map[0].length){
+        newRow.push(null);
         for (let y = 0; y < map.length; y++)
           map[y].push(null);
+      }
 
       map[nY][nX] = newFields[i][2];
     }
@@ -186,19 +189,55 @@ function drawMap() {
   }
 }
 
+function choose(arr){
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function fieldFilled(x, y, mapOverride=null){
+  if (mapOverride === null)
+    mapOverride = map;
+  return y >= 0 && y < mapOverride.length && x >= 0 && x < mapOverride[0].length && mapOverride[y][x] !== null;
+}
+
 function generateMap() {
   let size = [20, 20];
   let map = [];
 
+  // Make everything grass
   for (let y = 0; y < size[1]; y++) {
     let row = [];
     for (let x = 0; x < size[0]; x++) row.push(tiles.grass);
     map.push(row);
   }
 
-  map[2][2] = tiles.water;
-  map[2][1] = tiles.water;
-  map[2][0] = tiles.water;
+  let blocksTotal = size[0] * size[1];
+
+  // Add lakes and rivers
+  let waterBlocks = Math.floor(blocksTotal * (5 + (Math.random() * 50)) / 100);
+
+  while (waterBlocks){
+    let y = Math.floor(Math.random() * size[1]);
+    let x = Math.floor(Math.random() * size[0]);
+
+    let riverLength = Math.floor(Math.random() * waterBlocks) + 1;
+    for (let i = 0; i < riverLength; i++){
+      map[y][x] = tiles.water;
+
+      let nX = x
+      let nY = y;
+
+      if(choose(['v', 'h']) === 'v')
+        nY += choose([1, -1]);
+      else
+        nX += choose([1, -1]);
+
+      if (fieldFilled(nX, nY, map)){
+        x = nX;
+        y = nY;
+        waterBlocks--;
+      }
+    }
+  }
 
   return map;
 }
@@ -208,5 +247,5 @@ window.onload = () => {
   init();
   drawMap();
 
-  //setInterval(nextTick, 100);
+  setInterval(nextTick, 5000);
 }
