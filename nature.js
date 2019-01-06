@@ -32,9 +32,10 @@ const tiles = {
     img: null,
     spread: 1,
     clone: {
-      grass: 1,
-      water: 1,
-      forest: 0.5
+      grass: 0.5,
+      water: 0.5,
+      forest: 0.25,
+      sand: 0.75
     }
   },
   forest: {
@@ -45,6 +46,27 @@ const tiles = {
     clone: {
       grass: 3,
       water: 5
+    }
+  },
+  house: {
+    name: "house",
+    imgSrc: "nature/house.png",
+    img: null,
+    spread: 0,
+    clone: {
+      grass: 5,
+      forest: 3
+    }
+  },
+  sand: {
+    name: "sand",
+    imgSrc: "nature/sand.png",
+    img: null,
+    spread: 0,
+    clone: {
+      grass: 3,
+      water: 3,
+      forest: 2
     }
   }
 };
@@ -312,6 +334,60 @@ function generateMap() {
           y = nY;
         }
         forestBlocks--;
+      }
+    }
+
+    // Add sand
+    let sandBlocks = Math.floor(blocksTotal * Math.random() * 5 / 100);
+
+    while (sandBlocks){
+      let y = Math.floor(Math.random() * size[1]);
+      let x = Math.floor(Math.random() * size[0]);
+
+      let riverLength = Math.floor(Math.random() * sandBlocks) + 1;
+      for (let i = 0; i < riverLength; i++){
+        map[y][x] = tiles.sand;
+
+        let nX = x
+        let nY = y;
+
+        if(choose(['v', 'h']) === 'v')
+          nY += choose([1, -1]);
+        else
+          nX += choose([1, -1]);
+
+        if (fieldFilled(nX, nY, map)) if (map[nY][nX].name === "grass"){
+          x = nX;
+          y = nY;
+        }
+        sandBlocks--;
+      }
+    }
+
+    // Add house
+    let houseBlocks = Math.floor(blocksTotal * Math.random() * 5 / 100);
+
+    while (houseBlocks){
+      let y = Math.floor(Math.random() * size[1]);
+      let x = Math.floor(Math.random() * size[0]);
+
+      let riverLength = Math.floor(Math.random() * houseBlocks) + 1;
+      for (let i = 0; i < riverLength; i++){
+        map[y][x] = tiles.house;
+
+        let nX = x
+        let nY = y;
+
+        if(choose(['v', 'h']) === 'v')
+          nY += choose([1, -1]);
+        else
+          nX += choose([1, -1]);
+
+        if (fieldFilled(nX, nY, map)) if (["grass", "forest"].indexOf(map[nY][nX].name) !== -1){
+          x = nX;
+          y = nY;
+        }
+        houseBlocks--;
       }
     }
   }
